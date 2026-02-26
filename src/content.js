@@ -57,7 +57,7 @@ const state = {
  * @returns {Promise<boolean>} True if permission is granted, false otherwise.
  */
 async function verifyPermission(fileHandle, mode) {
-    const options = {mode};
+    const options = { mode };
     if ((await fileHandle.queryPermission(options)) === 'granted') return true;
     if ((await fileHandle.requestPermission(options)) === 'granted') return true;
     logError(`Permission for "${mode}" was not granted.`);
@@ -93,7 +93,7 @@ async function getFileHandle(mode) {
  */
 function dispatchCustomEvent(eventName, detail) {
     const eventData = IS_FIREFOX ? cloneInto(detail, window) : detail;
-    window.document.dispatchEvent(new CustomEvent(eventName, {detail: eventData}));
+    window.document.dispatchEvent(new CustomEvent(eventName, { detail: eventData }));
 }
 
 /**
@@ -133,6 +133,20 @@ function maybeClearFileHandle() {
     }
 }
 
+
+function createThrottledObserver(ObserverClass, callback, delay) {
+    let timer = null;
+
+    return new ObserverClass((...args) => {
+        if (timer) return;
+
+        timer = setTimeout(() => {
+            timer = null;
+            callback(...args);
+        }, delay);
+    });
+}
+
 // --- END HELPER UTILITIES ---
 
 
@@ -165,7 +179,7 @@ function toggleProLayout(enable) {
         };
 
         state.proLayoutObserver = new MutationObserver(syncPanelPosition);
-        state.proLayoutObserver.observe(actionsBlock, {attributes: true, attributeFilter: ['style']});
+        state.proLayoutObserver.observe(actionsBlock, { attributes: true, attributeFilter: ['style'] });
         syncPanelPosition(); // Initial sync
     } else {
         if (state.proLayoutObserver) state.proLayoutObserver.disconnect();
@@ -201,6 +215,8 @@ function initializeUploadCode() {
         } catch (error) {
             logError("Failed to read file:", error);
         }
+
+        event.target.value = '';
     }
 
     const menuContainer = document.querySelector('.menu-entries');
@@ -215,7 +231,7 @@ function updateEditorCode(code) {
     log("Updating editor code from local file.");
     state.currentCode = code;
     const cleanCode = code.replace(/\r\n|\r/g, '\n');
-    dispatchCustomEvent('ExternalEditorToIDE', {status: 'updateCode', code: cleanCode});
+    dispatchCustomEvent('ExternalEditorToIDE', { status: 'updateCode', code: cleanCode });
     updateTimestampDisplay();
 }
 
@@ -317,9 +333,9 @@ async function startSyncOnline() {
     state.sync.online.active = true;
     document.querySelector('.sync-online-button')?.classList.add('selected');
 
-// Enable CodinGame's internal sync and request initial code
-    dispatchCustomEvent('ExternalEditorToIDE', {status: 'synchronized', value: true});
-    dispatchCustomEvent('ExternalEditorToIDE', {status: 'getCode'});
+    // Enable CodinGame's internal sync and request initial code
+    dispatchCustomEvent('ExternalEditorToIDE', { status: 'synchronized', value: true });
+    dispatchCustomEvent('ExternalEditorToIDE', { status: 'getCode' });
 
     log("Sync Online started. Your local file will now be updated.");
 }
@@ -328,7 +344,7 @@ function stopSyncOnline() {
     if (!state.sync.online.active) return;
 
     // Disable CodinGame's internal sync
-    dispatchCustomEvent('ExternalEditorToIDE', {status: 'synchronized', value: false});
+    dispatchCustomEvent('ExternalEditorToIDE', { status: 'synchronized', value: false });
 
     state.sync.online.active = false;
     document.querySelector('.sync-online-button')?.classList.remove('selected');
@@ -345,7 +361,7 @@ function stopSyncOnline() {
  * A reusable function to create a menu button.
  * @param {{id: string, text: string, icon: string, onClick: function, disabled?: boolean}} options
  */
-function createMenuButton({id, text, icon, onClick, disabled = false}) {
+function createMenuButton({ id, text, icon, onClick, disabled = false }) {
     const menuContainer = document.querySelector('.menu-entries');
     const settingsEntry = menuContainer?.querySelector('.menu-entry.settings');
     if (!settingsEntry) return null; // Can't add the button
@@ -374,41 +390,46 @@ function createMenuButton({id, text, icon, onClick, disabled = false}) {
     return button;
 }
 
-function getVirtualSpaceHeight() {
-    const cgIdeConsole = document.querySelector('.cg-ide-console');
-    if (!cgIdeConsole || cgIdeConsole.classList.contains('playing')) return 0;
-
-    const parent = document.querySelector('.cg-ide-console-frame-container');
-    if (!parent) return 0;
-
-    const keyframes = parent.getElementsByClassName('keyframe');
-    if (keyframes.length <= 1) return 0;
-    const last_frame = keyframes[keyframes.length - 1];
-
-    const content = document.querySelector(".cg-ide-console-content")
-    if (!content) return 0;
-
-    return content.offsetHeight - last_frame.offsetHeight;
-}
+let resizeObserver = null;
 
 function maybeAddConsoleSpace(settings) {
     if (!settings.consoleSpace) return;
+
+    const frameContainer = document.querySelector('.cg-ide-console-frame-container');
+    if (!frameContainer) return;
+
     let consoleSpace = document.querySelector('.console-space');
-
     if (!consoleSpace) {
-        const parent = document.querySelector('.cg-ide-console-frame-container');
-        if (!parent) return;
-
         consoleSpace = document.createElement('div');
         consoleSpace.className = 'console-space';
-        parent.appendChild(consoleSpace);
+        frameContainer.appendChild(consoleSpace);
     }
 
-    const height_str = `${getVirtualSpaceHeight()}px`;
-    if (consoleSpace.style.height !== height_str) {
-        log("Setting virtual space heigth to", height_str);
-        consoleSpace.style.height = height_str;
+    const keyframes = frameContainer.getElementsByClassName('keyframe');
+    if (keyframes.length <= 1) return;
+
+    const lastKeyframe = keyframes[keyframes.length - 1];
+    const cgIdeConsole = document.querySelector('.cg-ide-console');
+    if (!cgIdeConsole) return 0;
+
+
+    if (!resizeObserver) {
+        let callback = () => {
+            let height = cgIdeConsole.offsetHeight - lastKeyframe.offsetHeight - 7;
+            if (height < 0) height = 0;
+
+            const height_str = `${height}px`;
+            if (consoleSpace.style.height !== height_str) {
+                log("Setting virtual space height to", height_str);
+                consoleSpace.style.height = height_str;
+            }
+        };
+
+        resizeObserver = createThrottledObserver(ResizeObserver, callback, 500);
     }
+    resizeObserver.disconnect();
+    resizeObserver.observe(cgIdeConsole);
+    resizeObserver.observe(lastKeyframe);
 }
 
 function initializeZen() {
@@ -537,6 +558,7 @@ function initializeUI(settings) {
     log("UI Initialized.");
 }
 
+
 function handlePageChanges() {
     // If the menu exists and we haven't initialized, run the setup.
     if (document.querySelector('.menu-entries')) {
@@ -545,7 +567,6 @@ function handlePageChanges() {
         } else {
             chrome.storage.sync.get(DEFAULT_SETTINGS, maybeAddConsoleSpace);
         }
-
     }
     // If the menu disappears, reset the state.
     else if (!document.querySelector('.menu-entries') && state.isInitialized) {
@@ -557,5 +578,5 @@ function handlePageChanges() {
 }
 
 // Observe the DOM for changes to initialize the extension when the IDE loads.
-const pageObserver = new MutationObserver(handlePageChanges);
-pageObserver.observe(document.body, {childList: true, subtree: true});
+const pageObserver = createThrottledObserver(MutationObserver, handlePageChanges, 500);
+pageObserver.observe(document.body, { childList: true, subtree: true });

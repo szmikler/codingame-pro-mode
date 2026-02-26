@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "CodinGame Pro Mode",
-    "version": "3.3",
+    "version": "3.4",
     "description": "Optimize the CodinGame UI and add seamless code synchronization.",
     "icons": {
         "16": "icons/icon16.png",
