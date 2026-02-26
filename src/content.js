@@ -390,7 +390,7 @@ function createMenuButton({ id, text, icon, onClick, disabled = false }) {
     return button;
 }
 
-let resizeObserver = null;
+let consoleResizeObserver = null;
 
 function maybeAddConsoleSpace(settings) {
     if (!settings.consoleSpace) return;
@@ -412,8 +412,7 @@ function maybeAddConsoleSpace(settings) {
     const cgIdeConsole = document.querySelector('.cg-ide-console');
     if (!cgIdeConsole) return 0;
 
-
-    if (!resizeObserver) {
+    if (!consoleResizeObserver) {
         let callback = () => {
             let height = cgIdeConsole.offsetHeight - lastKeyframe.offsetHeight - 7;
             if (height < 0) height = 0;
@@ -425,11 +424,11 @@ function maybeAddConsoleSpace(settings) {
             }
         };
 
-        resizeObserver = createThrottledObserver(ResizeObserver, callback, 500);
+        consoleResizeObserver = createThrottledObserver(ResizeObserver, callback, 500);
     }
-    resizeObserver.disconnect();
-    resizeObserver.observe(cgIdeConsole);
-    resizeObserver.observe(lastKeyframe);
+    consoleResizeObserver.disconnect();
+    consoleResizeObserver.observe(cgIdeConsole);
+    consoleResizeObserver.observe(lastKeyframe);
 }
 
 function initializeZen() {
@@ -562,18 +561,21 @@ function initializeUI(settings) {
 function handlePageChanges() {
     // If the menu exists and we haven't initialized, run the setup.
     if (document.querySelector('.menu-entries')) {
-        if (!state.isInitialized) {
-            chrome.storage.sync.get(DEFAULT_SETTINGS, initializeUI);
-        } else {
-            chrome.storage.sync.get(DEFAULT_SETTINGS, maybeAddConsoleSpace);
-        }
+        if (!state.isInitialized) chrome.storage.sync.get(DEFAULT_SETTINGS, initializeUI);
     }
+
+    if (!state.isInitialized) return;
+    chrome.storage.sync.get(DEFAULT_SETTINGS, maybeAddConsoleSpace);
+
     // If the menu disappears, reset the state.
-    else if (!document.querySelector('.menu-entries') && state.isInitialized) {
+    if (!document.querySelector('.menu-entries')) {
         log("IDE menu not found. Tearing down features.");
         if (state.sync.local.active) stopSyncLocal();
         if (state.sync.online.active) stopSyncOnline();
         state.isInitialized = false;
+
+        if (consoleResizeObserver) consoleResizeObserver.disconnect();
+        consoleResizeObserver = null;
     }
 }
 
