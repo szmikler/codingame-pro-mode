@@ -179,15 +179,17 @@ function toggleProLayout(enable) {
             if (targetRight && actionsBlock.style.right !== targetRight) actionsBlock.style.right = targetRight;
         };
 
-        state.proLayoutObserver = new MutationObserver(syncPanelPosition);
+        state.proLayoutObserver = createThrottledObserver(MutationObserver, syncPanelPosition, 10);
         state.proLayoutObserver.observe(actionsBlock, { attributes: true, attributeFilter: ['style'] });
         syncPanelPosition(); // Initial sync
     } else {
         if (state.proLayoutObserver) state.proLayoutObserver.disconnect();
         state.proLayoutObserver = null;
+
         if (consoleBlock) consoleBlock.style.left = '';
-        if (consoleHeaderButtons) consoleHeaderButtons.style.display = '';
         if (actionsBlock) actionsBlock.style.right = '';
+        if (consoleHeaderButtons) consoleHeaderButtons.style.display = '';
+
     }
 }
 
@@ -575,6 +577,9 @@ function handlePageChanges() {
 
         if (state.consoleResizeObserver) state.consoleResizeObserver.disconnect();
         state.consoleResizeObserver = null;
+
+        if (state.proLayoutObserver) state.proLayoutObserver.disconnect();
+        state.proLayoutObserver = null;
     }
 }
 
