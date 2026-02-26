@@ -37,6 +37,7 @@ const state = {
     isInitialized: false,
     isProLayoutActive: localStorage.getItem('isProLayoutActive') !== 'false',
     proLayoutObserver: null,
+    consoleResizeObserver: null,
     currentCode: '',
     sync: {
         local: {
@@ -390,8 +391,6 @@ function createMenuButton({ id, text, icon, onClick, disabled = false }) {
     return button;
 }
 
-let consoleResizeObserver = null;
-
 function maybeAddConsoleSpace(settings) {
     if (!settings.consoleSpace) return;
 
@@ -412,7 +411,7 @@ function maybeAddConsoleSpace(settings) {
     const cgIdeConsole = document.querySelector('.cg-ide-console');
     if (!cgIdeConsole) return 0;
 
-    if (!consoleResizeObserver) {
+    if (!state.consoleResizeObserver) {
         let callback = () => {
             let height = cgIdeConsole.offsetHeight - lastKeyframe.offsetHeight - 7;
             if (height < 0) height = 0;
@@ -424,11 +423,11 @@ function maybeAddConsoleSpace(settings) {
             }
         };
 
-        consoleResizeObserver = createThrottledObserver(ResizeObserver, callback, 500);
+        state.consoleResizeObserver = createThrottledObserver(ResizeObserver, callback, 500);
     }
-    consoleResizeObserver.disconnect();
-    consoleResizeObserver.observe(cgIdeConsole);
-    consoleResizeObserver.observe(lastKeyframe);
+    state.consoleResizeObserver.disconnect();
+    state.consoleResizeObserver.observe(cgIdeConsole);
+    state.consoleResizeObserver.observe(lastKeyframe);
 }
 
 function initializeZen() {
@@ -574,8 +573,8 @@ function handlePageChanges() {
         if (state.sync.online.active) stopSyncOnline();
         state.isInitialized = false;
 
-        if (consoleResizeObserver) consoleResizeObserver.disconnect();
-        consoleResizeObserver = null;
+        if (state.consoleResizeObserver) state.consoleResizeObserver.disconnect();
+        state.consoleResizeObserver = null;
     }
 }
 
