@@ -11,6 +11,7 @@ const SETTINGS_DESCRIPTION = {
     syncOnline: "Add 'Sync Online' button to the menu. Pick a local file that will be overwritten by the online editor content.",
     consoleSpace: "Adds virtual space at the bottom of the console to have better experience when browsing console output.",
     zenMode: "Add 'Zen Mode' button to the menu. It hides the header, description and menu. Refresh the page to restore them.",
+    DEFAULT: "Refresh CodinGame website to apply the settings.",
 }
 
 const FSO_API_AVAILABLE = 'showOpenFilePicker' in self && typeof window.showOpenFilePicker === 'function';
@@ -24,7 +25,7 @@ function camelCaseToLabel(str) {
 
 // Function to create a switch element
 function createSwitch(id, label, isChecked = false) {
-    const settingRow = document.createElement('div');
+    const settingRow = document.createElement('label');
     settingRow.className = 'setting-row';
 
     const labelElement = document.createElement('label');
@@ -42,7 +43,6 @@ function createSwitch(id, label, isChecked = false) {
     const slider = document.createElement('span');
     slider.className = 'slider';
 
-
     switchLabel.appendChild(checkbox);
     switchLabel.appendChild(slider);
 
@@ -50,25 +50,21 @@ function createSwitch(id, label, isChecked = false) {
     settingRow.appendChild(switchLabel);
 
     const outerDiv = document.createElement('div');
-    const description = document.createElement('p');
 
-    description.className = 'description';
-    description.textContent = SETTINGS_DESCRIPTION[id] || '';
     outerDiv.appendChild(settingRow);
-    outerDiv.appendChild(description);
+    const descrptionField = document.getElementById('description-field');
 
-    description.hidden = true;
     outerDiv.onmouseenter = () => {
-        description.hidden = false;
+        descrptionField.textContent = SETTINGS_DESCRIPTION[id] || '';
         outerDiv.style.backgroundColor = 'rgba(0, 0, 0, 0.5)'; // Change background color on mouse enter
     }
     outerDiv.onmouseleave = () => {
-        description.hidden = true;
+        descrptionField.textContent = SETTINGS_DESCRIPTION['DEFAULT'] || '';
         outerDiv.style.backgroundColor = ''; // Reset background color on mouse leave
     }
+
     outerDiv.style.padding = '5px';
     outerDiv.style.borderRadius = '5px';
-
     return outerDiv;
 }
 
