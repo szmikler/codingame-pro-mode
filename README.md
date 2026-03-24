@@ -61,3 +61,11 @@ Firefox does not currently support the necessary subset of File System Access AP
 While the code synchronization won't work, you can still install the extension manually to use other features:
 1. Download the source code of this extension
 2. Follow the official guide for [temporary installation in Firefox](https://extensionworkshop.com/documentation/develop/temporary-installation-in-firefox)
+
+## Development
+
+Install test dependencies with `npm install`.
+
+Run unit tests with `npm run test:unit`.
+
+Run the extension smoke test with `npm run test:e2e`.

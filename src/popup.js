@@ -68,8 +68,10 @@ function createSwitch(id, label, isChecked = false) {
     return outerDiv;
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+function initializePopup() {
     const settingsContainer = document.getElementById('settings-container');
+    if (!settingsContainer || settingsContainer.children.length > 0) return;
+
     const settingIds = Object.keys(DEFAULT_SETTINGS);
     const checkboxes = {};
 
@@ -96,7 +98,9 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     });
-});
+}
+
+document.addEventListener('DOMContentLoaded', initializePopup);
 
 if (!FSO_API_AVAILABLE) {
     const container = document.getElementById('container');

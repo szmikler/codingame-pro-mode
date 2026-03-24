@@ -1,0 +1,17 @@
+{
+  "name": "codingame-pro-mode",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "npm run test:unit",
+    "test:unit": "vitest run",
+    "test:unit:watch": "vitest",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.55.0",
+    "jsdom": "^26.1.0",
+    "vitest": "^3.2.4"
+  }
+}
