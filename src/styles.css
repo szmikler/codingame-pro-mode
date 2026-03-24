@@ -7,11 +7,24 @@
 }
 
 .code-timestamp {
-    display: inline-flex;
     height: 100%;
     align-items: center;
+    display: inline-flex;
     float: right;
     margin-right: 10px;
+}
+
+body:not(.pro-layout-active) .code-timestamp {
+    display: none;
+}
+
+body.pro-layout-active .code-timestamp {
+    position: absolute;
+    top: 0;
+    right: 10px;
+    float: none;
+    margin-right: 0;
+    pointer-events: none;
 }
 
 /* --- TOGGLEABLE STYLES FOR THE "PRO LAYOUT" --- */
