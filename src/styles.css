@@ -1,30 +1,20 @@
 /* --- PERMANENT STYLES FOR BUTTONS --- */
 .pro-icon {
     display: block;
-    margin: 0 auto 5px auto; /* Centers the icon horizontally */
+    /* Centers the icon horizontally */
+    margin: 0 auto 5px auto;
     width: 22px;
     height: 22px;
 }
 
 .code-timestamp {
-    height: 100%;
-    align-items: center;
-    display: inline-flex;
+    font-size: 14px;
     float: right;
+    height: 100%;
+    display: inline-flex;
+    align-items: center;
     margin-right: 10px;
-}
-
-body:not(.pro-layout-active) .code-timestamp {
-    display: none;
-}
-
-body.pro-layout-active .code-timestamp {
-    position: absolute;
-    top: 0;
-    right: 10px;
-    float: none;
-    margin-right: 0;
-    pointer-events: none;
+    margin-left: -120px;
 }
 
 /* --- TOGGLEABLE STYLES FOR THE "PRO LAYOUT" --- */
