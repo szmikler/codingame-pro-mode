@@ -110,7 +110,13 @@ function updateTimestampDisplay() {
         codeManagement.appendChild(codeTimestamp);
         log("Created timestamp display.");
     }
-    codeTimestamp.textContent = `Last synchronized: ${new Date().toLocaleString()}`;
+    let date = new Date().toLocaleDateString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+    });
+    codeTimestamp.textContent = `Last synchronized: ${date}`;
 }
 
 /**
@@ -126,14 +132,17 @@ function maybeRemoveTimestamp() {
 }
 
 /**
- * Clears the file handle if no sync processes are active.
+ * Clears the synchronization state for the inactive syncs.
  */
-function maybeClearFileHandle() {
+function maybeClearSyncState() {
     if (!state.sync.local.active && !state.sync.online.active) {
         state.sync.fileHandle = null;
+        state.currentCode = '';
+    }
+    if (!state.sync.local.active) {
+        state.sync.local.lastModified = 0;
     }
 }
-
 
 function createThrottledObserver(ObserverClass, callback, delay) {
     let timer = null;
@@ -283,7 +292,7 @@ function stopSyncLocal() {
 
     state.sync.local.active = false;
     document.querySelector('.sync-local-button')?.classList.remove('selected');
-    maybeClearFileHandle();
+    maybeClearSyncState();
     maybeRemoveTimestamp();
     log("Sync Local stopped.");
 }
@@ -351,7 +360,7 @@ function stopSyncOnline() {
 
     state.sync.online.active = false;
     document.querySelector('.sync-online-button')?.classList.remove('selected');
-    maybeClearFileHandle();
+    maybeClearSyncState();
     maybeRemoveTimestamp();
     log("Sync Online stopped.");
 }
