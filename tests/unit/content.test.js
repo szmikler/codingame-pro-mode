@@ -84,7 +84,7 @@ describe('content.js timestamp behavior', () => {
     expect(timestamp.textContent).toMatch(/^Last synchronized:/);
   });
 
-  it('restores the timestamp after the header is recreated while sync is active', () => {
+  it('recreates the timestamp after header replacement only when the display is updated again', () => {
     runInDomContext(dom, 'state.sync.local.active = true; state.isInitialized = true;');
     dom.window.updateTimestampDisplay();
 
@@ -94,6 +94,10 @@ describe('content.js timestamp behavior', () => {
     dom.window.document.body.appendChild(replacementHeader);
 
     dom.window.handlePageChanges();
+
+    expect(dom.window.document.querySelector('.code-timestamp')).toBeNull();
+
+    dom.window.updateTimestampDisplay();
 
     const timestamp = dom.window.document.querySelector('.code-timestamp');
     expect(timestamp).not.toBeNull();
