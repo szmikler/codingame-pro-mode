@@ -567,11 +567,6 @@ function handlePageChanges() {
 
     if (!state.isInitialized) return;
     chrome.storage.sync.get(DEFAULT_SETTINGS, maybeAddConsoleSpace);
-    if ((state.sync.local.active || state.sync.online.active) &&
-        document.querySelector('.bloc-header') &&
-        !document.querySelector('.code-timestamp')) {
-        updateTimestampDisplay();
-    }
 
     // If the menu disappears, reset the state.
     if (!document.querySelector('.menu-entries')) {
