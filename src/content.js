@@ -239,7 +239,7 @@ function initializeUploadCode() {
 
 // -- SYNC LOCAL (Upload from File to Editor) --
 function updateEditorCode(code) {
-    if (!code) return;
+    if (typeof code !== 'string') return;
     log("Updating editor code from local file.");
     state.currentCode = code;
     const cleanCode = code.replace(/\r\n|\r/g, '\n');
@@ -273,7 +273,7 @@ async function observeFileForChangesLoop() {
 async function startSyncLocal() {
     if (state.sync.local.active) return;
     if (!FSO_API_AVAILABLE) {
-        alert("File System Access API not enabled in this browser.\n\nTry enabling:\nchrome://flags/#file-system-access-api\n\nRead more:\nhttps://github.com/sjmikler/codingame-pro-mode");
+        alert("File System Access API not enabled in this browser.\n\nTry enabling:\nchrome://flags/#file-system-access-api\n\nRead more:\nhttps://github.com/szmikler/codingame-pro-mode");
         return;
     }
 
@@ -323,20 +323,21 @@ async function writeCodeToLocalFile(code) {
 }
 
 async function handleSyncOnlineEvent(event) {
-    if (!state.sync.online.active || !event.detail.code || event.detail.code === state.currentCode) return;
+    const code = event.detail?.code;
+    if (!state.sync.online.active || typeof code !== 'string' || code === state.currentCode) return;
     if (!await verifyPermission(state.sync.fileHandle, 'readwrite')) {
         stopSyncOnline();
         return;
     }
-    state.currentCode = event.detail.code;
-    await writeCodeToLocalFile(event.detail.code);
+    state.currentCode = code;
+    await writeCodeToLocalFile(code);
     log("Code updated in local file.");
 }
 
 async function startSyncOnline() {
     if (state.sync.online.active) return;
     if (!FSO_API_AVAILABLE) {
-        alert("File System Access API not enabled in this browser.\n\nTry enabling:\nchrome://flags/#file-system-access-api\n\nRead more:\nhttps://github.com/sjmikler/codingame-pro-mode");
+        alert("File System Access API not enabled in this browser.\n\nTry enabling:\nchrome://flags/#file-system-access-api\n\nRead more:\nhttps://github.com/szmikler/codingame-pro-mode");
         return;
     }
 

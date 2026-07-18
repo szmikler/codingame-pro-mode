@@ -106,7 +106,7 @@ if (!FSO_API_AVAILABLE) {
     const container = document.getElementById('container');
     if (container) {
         const message = document.createElement('a');
-        message.href = 'https://github.com/sjmikler/codingame-pro-mode?tab=readme-ov-file#troubleshooting';
+        message.href = 'https://github.com/szmikler/codingame-pro-mode?tab=readme-ov-file#troubleshooting';
         message.textContent = 'FileSystemAccessAPI disabled. Synchronization will not work.';
         message.style.color = 'red';
         container.appendChild(message);

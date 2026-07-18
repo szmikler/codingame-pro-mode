@@ -193,4 +193,35 @@ describe('content.js feature behavior', () => {
     expect(dom.window.document.querySelector('.menu').hidden).toBe(true);
     expect(dom.window.document.querySelector('.zen-mode-button').classList.contains('selected')).toBe(true);
   });
+
+  it('uploads an empty local file to clear the online editor', () => {
+    let eventDetail;
+    dom.window.document.addEventListener('ExternalEditorToIDE', (event) => {
+      eventDetail = event.detail;
+    });
+
+    dom.window.updateEditorCode('');
+
+    expect(eventDetail).toEqual({ status: 'updateCode', code: '' });
+  });
+
+  it('downloads an empty editor value to clear the local file', async () => {
+    let writtenCode;
+    dom.window.testFileHandle = {
+      queryPermission: async () => 'granted',
+      createWritable: async () => ({
+        write: async (code) => { writtenCode = code; },
+        close: async () => {},
+      }),
+    };
+    runInDomContext(
+      dom,
+      'state.sync.online.active = true; state.sync.fileHandle = testFileHandle; state.currentCode = "old code";',
+    );
+
+    await dom.window.handleSyncOnlineEvent({ detail: { code: '' } });
+
+    expect(writtenCode).toBe('');
+    expect(runInDomContext(dom, 'state.currentCode')).toBe('');
+  });
 });
